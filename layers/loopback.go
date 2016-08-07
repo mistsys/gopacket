@@ -10,7 +10,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/google/gopacket"
+	"github.com/mistsys/gopacket"
 )
 
 // Loopback contains the header for loopback encapsulation.  This header is

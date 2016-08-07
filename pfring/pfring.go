@@ -41,7 +41,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/google/gopacket"
+	"github.com/mistsys/gopacket"
 )
 
 const errorBufferSize = 256

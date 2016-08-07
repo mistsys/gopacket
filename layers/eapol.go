@@ -7,7 +7,7 @@
 package layers
 
 import (
-	"github.com/google/gopacket"
+	"github.com/mistsys/gopacket"
 )
 
 // EAPOL defines an EAP over LAN (802.1x) layer.

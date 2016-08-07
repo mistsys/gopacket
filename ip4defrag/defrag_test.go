@@ -7,9 +7,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/bytediff"
-	"github.com/google/gopacket/layers"
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/bytediff"
+	"github.com/mistsys/gopacket/layers"
 )
 
 func TestNotFrag(t *testing.T) {

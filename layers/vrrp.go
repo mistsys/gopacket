@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/google/gopacket"
+	"github.com/mistsys/gopacket"
 )
 
 /*
