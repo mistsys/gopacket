@@ -290,76 +290,137 @@ var (
 )
 
 func (a EthernetType) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return EthernetTypeMetadata[a].DecodeWith.Decode(data, p)
+	if EthernetTypeMetadata[a].DecodeWith != nil {
+		return EthernetTypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode ethernet type %d", a)
 }
 func (a EthernetType) String() string {
-	return EthernetTypeMetadata[a].Name
+	if EthernetTypeMetadata[a].Name != "" {
+		return EthernetTypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownEthernetType(%d)", a)
 }
 func (a EthernetType) LayerType() gopacket.LayerType {
 	return EthernetTypeMetadata[a].LayerType
 }
 func (a IPProtocol) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return IPProtocolMetadata[a].DecodeWith.Decode(data, p)
+	if IPProtocolMetadata[a].DecodeWith != nil {
+		return IPProtocolMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode IP protocol %d", a)
 }
 func (a IPProtocol) String() string {
-	return IPProtocolMetadata[a].Name
+	if IPProtocolMetadata[a].Name != "" {
+		return IPProtocolMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownIPProtocol(%d)", a)
 }
 func (a IPProtocol) LayerType() gopacket.LayerType {
 	return IPProtocolMetadata[a].LayerType
 }
 func (a SCTPChunkType) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return SCTPChunkTypeMetadata[a].DecodeWith.Decode(data, p)
+	if SCTPChunkTypeMetadata[a].DecodeWith != nil {
+		return SCTPChunkTypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode SCTP chunk type %d", a)
 }
 func (a SCTPChunkType) String() string {
-	return SCTPChunkTypeMetadata[a].Name
+	if SCTPChunkTypeMetadata[a].Name != "" {
+		return SCTPChunkTypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownSCTPChunkType(%d)", a)
 }
 func (a PPPType) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return PPPTypeMetadata[a].DecodeWith.Decode(data, p)
+	if PPPTypeMetadata[a].DecodeWith != nil {
+		return PPPTypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode PPP type %d", a)
 }
 func (a PPPType) String() string {
-	return PPPTypeMetadata[a].Name
+	if PPPTypeMetadata[a].Name != "" {
+		return PPPTypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownPPPType(%d)", a)
 }
 func (a LinkType) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return LinkTypeMetadata[a].DecodeWith.Decode(data, p)
+	if LinkTypeMetadata[a].DecodeWith != nil {
+		return LinkTypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode link type %d", a)
 }
 func (a LinkType) String() string {
-	return LinkTypeMetadata[a].Name
+	if LinkTypeMetadata[a].Name != "" {
+		return LinkTypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownLinkType(%d)", a)
 }
 func (a PPPoECode) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return PPPoECodeMetadata[a].DecodeWith.Decode(data, p)
+	if PPPoECodeMetadata[a].DecodeWith != nil {
+		return PPPoECodeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode PPPoE code %d", a)
 }
 func (a PPPoECode) String() string {
-	return PPPoECodeMetadata[a].Name
+	if PPPoECodeMetadata[a].Name != "" {
+		return PPPoECodeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownPPPoECode(%d)", a)
 }
 func (a FDDIFrameControl) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return FDDIFrameControlMetadata[a].DecodeWith.Decode(data, p)
+	if FDDIFrameControlMetadata[a].DecodeWith != nil {
+		return FDDIFrameControlMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode FDDI frame control %d", a)
 }
 func (a FDDIFrameControl) String() string {
-	return FDDIFrameControlMetadata[a].Name
+	if FDDIFrameControlMetadata[a].Name != "" {
+		return FDDIFrameControlMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownFDDIFrameControl(%d)", a)
 }
 func (a EAPOLType) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return EAPOLTypeMetadata[a].DecodeWith.Decode(data, p)
+	if EAPOLTypeMetadata[a].DecodeWith != nil {
+		return EAPOLTypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode EAPOL type %d", a)
 }
 func (a EAPOLType) String() string {
-	return EAPOLTypeMetadata[a].Name
+	if EAPOLTypeMetadata[a].Name != "" {
+		return EAPOLTypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownEAPOLType(%d)", a)
+
 }
 func (a EAPOLType) LayerType() gopacket.LayerType {
 	return EAPOLTypeMetadata[a].LayerType
 }
 func (a ProtocolFamily) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return ProtocolFamilyMetadata[a].DecodeWith.Decode(data, p)
+	if ProtocolFamilyMetadata[a].DecodeWith != nil {
+		return ProtocolFamilyMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode protocol family %d", a)
 }
 func (a ProtocolFamily) String() string {
-	return ProtocolFamilyMetadata[a].Name
+	if ProtocolFamilyMetadata[a].Name != "" {
+		return ProtocolFamilyMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownProtocolFamily(%d)", a)
 }
 func (a ProtocolFamily) LayerType() gopacket.LayerType {
 	return ProtocolFamilyMetadata[a].LayerType
 }
 func (a Dot11Type) Decode(data []byte, p gopacket.PacketBuilder) error {
-	return Dot11TypeMetadata[a].DecodeWith.Decode(data, p)
+	if Dot11TypeMetadata[a].DecodeWith != nil {
+		return Dot11TypeMetadata[a].DecodeWith.Decode(data, p)
+	}
+	return fmt.Errorf("Unable to decode Dot11 type %d", a)
 }
 func (a Dot11Type) String() string {
-	return Dot11TypeMetadata[a].Name
+	if Dot11TypeMetadata[a].Name != "" {
+		return Dot11TypeMetadata[a].Name
+	}
+	return fmt.Sprintf("UnknownDot11Type(%d)", a)
 }
 func (a Dot11Type) LayerType() gopacket.LayerType {
 	return Dot11TypeMetadata[a].LayerType
@@ -379,50 +440,6 @@ func decodeIPv4or6(data []byte, p gopacket.PacketBuilder) error {
 
 func init() {
 	// Here we link up all enumerations with their respective names and decoders.
-	for i := 0; i < 65536; i++ {
-		EthernetTypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode ethernet type %d", i)),
-			Name:       fmt.Sprintf("UnknownEthernetType(%d)", i),
-		}
-		PPPTypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode PPP type %d", i)),
-			Name:       fmt.Sprintf("UnknownPPPType(%d)", i),
-		}
-	}
-	for i := 0; i < 256; i++ {
-		IPProtocolMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode IP protocol %d", i)),
-			Name:       fmt.Sprintf("UnknownIPProtocol(%d)", i),
-		}
-		SCTPChunkTypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode SCTP chunk type %d", i)),
-			Name:       fmt.Sprintf("UnknownSCTPChunkType(%d)", i),
-		}
-		PPPoECodeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode PPPoE code %d", i)),
-			Name:       fmt.Sprintf("UnknownPPPoECode(%d)", i),
-		}
-		LinkTypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode link type %d", i)),
-			Name:       fmt.Sprintf("UnknownLinkType(%d)", i),
-		}
-		FDDIFrameControlMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode FDDI frame control %d", i)),
-			Name:       fmt.Sprintf("UnknownFDDIFrameControl(%d)", i),
-		}
-		EAPOLTypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode EAPOL type %d", i)),
-			Name:       fmt.Sprintf("UnknownEAPOLType(%d)", i),
-		}
-		ProtocolFamilyMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode protocol family %d", i)),
-			Name:       fmt.Sprintf("UnknownProtocolFamily(%d)", i),
-		}
-		Dot11TypeMetadata[i] = EnumMetadata{
-			DecodeWith: errorFunc(fmt.Sprintf("Unable to decode Dot11 type %d", i)),
-			Name:       fmt.Sprintf("UnknownDot11Type(%d)", i),
-		}
-	}
 
 	EthernetTypeMetadata[EthernetTypeLLC] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeLLC), Name: "LLC", LayerType: LayerTypeLLC}
 	EthernetTypeMetadata[EthernetTypeIPv4] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeIPv4), Name: "IPv4", LayerType: LayerTypeIPv4}
