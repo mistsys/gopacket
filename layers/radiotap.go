@@ -723,6 +723,29 @@ type RadioTap struct {
 	VHT         RadioTapVHT
 }
 
+// for the current RadioTap Present value return the number of bytes the fields use.
+func (m *RadioTap) getRadioTapFieldSize() int {
+	// TODO
+	return 0
+}
+
+// SerializeTo writes the serialized form of this layer into the
+// SerializationBuffer, implementing gopacket.SerializableLayer.
+func (m *RadioTap) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+	fieldSize := m.getRadioTapFieldSize()
+	bytes, err := b.PrependBytes(8 + fieldSize)
+	if err != nil {
+		return err
+	}
+	m.Length = uint16(8 + fieldSize)
+	bytes[0] = m.Version
+	bytes[1] = 0
+	binary.LittleEndian.PutUint16(bytes[2:], m.Length)
+	binary.LittleEndian.PutUint32(bytes[4:], uint32(m.Present))
+	// TODO: Serialize the fields indicated in Present value.
+	return nil
+}
+
 func (m *RadioTap) LayerType() gopacket.LayerType { return LayerTypeRadioTap }
 
 func (m *RadioTap) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
