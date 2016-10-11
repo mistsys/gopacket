@@ -69,6 +69,7 @@ type EAPOLKey struct {
 
 	KeyInfo_DescriptorVersion int
 	KeyInfo_Type              int
+	KeyInfo_Index             int
 	KeyInfo_Install           int
 	KeyInfo_ACK               int
 	KeyInfo_MIC               int
@@ -96,10 +97,11 @@ func (e *EAPOLKey) LayerType() gopacket.LayerType {
 func (e *EAPOLKey) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 
 	e.DescriptorType = uint8(data[0])
-	e.KeyInfo = binary.LittleEndian.Uint16(data[1:3])
+	e.KeyInfo = binary.BigEndian.Uint16(data[1:3])
 
 	e.KeyInfo_DescriptorVersion = int(e.KeyInfo & 7)
 	e.KeyInfo_Type = int((e.KeyInfo >> 3) & 1)
+	e.KeyInfo_Index = int((e.KeyInfo >> 4) & 3)
 	e.KeyInfo_Install = int((e.KeyInfo >> 6) & 1)
 	e.KeyInfo_ACK = int((e.KeyInfo >> 7) & 1)
 	e.KeyInfo_MIC = int((e.KeyInfo >> 8) & 1)
@@ -109,7 +111,7 @@ func (e *EAPOLKey) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) erro
 	e.KeyInfo_EncryptedKeyData = int((e.KeyInfo >> 12) & 1)
 	e.KeyInfo_SMKMessage = int((e.KeyInfo >> 13) & 1)
 
-	e.KeyLength = binary.LittleEndian.Uint16(data[3:5])
+	e.KeyLength = binary.BigEndian.Uint16(data[3:5])
 
 	e.KeyReplayCounter = data[5 : 5+8]
 	e.KeyNonce = data[13 : 13+32]
