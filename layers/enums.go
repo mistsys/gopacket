@@ -50,7 +50,7 @@ const (
 	EthernetTypeTransparentEthernetBridging EthernetType = 0x6558
 	EthernetTypeDot1Q                       EthernetType = 0x8100
 	EthernetType802dot3                     EthernetType = 0x8203
-	EthernetType802dot11                    EthernetType = 0x8211
+	EthernetTypeOmniPeek                    EthernetType = 0x8211
 	EthernetTypePPPoEDiscovery              EthernetType = 0x8863
 	EthernetTypePPPoESession                EthernetType = 0x8864
 	EthernetTypeMPLSUnicast                 EthernetType = 0x8847
@@ -461,7 +461,7 @@ func init() {
 	EthernetTypeMetadata[EthernetTypeTransparentEthernetBridging] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeEthernet), Name: "TransparentEthernetBridging", LayerType: LayerTypeEthernet}
 
 	EthernetTypeMetadata[EthernetType802dot3] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeEthernet), Name: "802dot3", LayerType: LayerTypeEthernet}
-	EthernetTypeMetadata[EthernetType802dot11] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeDot11), Name: "802dot11", LayerType: LayerTypeDot11}
+	EthernetTypeMetadata[EthernetTypeOmniPeek] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeOmniPeek), Name: "OmniPeek", LayerType: LayerTypeOmniPeek}
 
 	IPProtocolMetadata[IPProtocolIPv4] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeIPv4), Name: "IPv4", LayerType: LayerTypeIPv4}
 	IPProtocolMetadata[IPProtocolTCP] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(decodeTCP), Name: "TCP", LayerType: LayerTypeTCP}

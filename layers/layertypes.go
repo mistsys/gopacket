@@ -122,6 +122,7 @@ var (
 	LayerTypeDHCPv4                      = gopacket.RegisterLayerType(118, gopacket.LayerTypeMetadata{"DHCPv4", gopacket.DecodeFunc(decodeDHCPv4)})
 	LayerTypeVRRP                        = gopacket.RegisterLayerType(119, gopacket.LayerTypeMetadata{"VRRP", gopacket.DecodeFunc(decodeVRRP)})
 	LayerTypeEAPOLKey                    = gopacket.RegisterLayerType(120, gopacket.LayerTypeMetadata{"EAPOLKey", gopacket.DecodeFunc(decodeEAPOLKey)})
+	LayerTypeOmniPeek                    = gopacket.RegisterLayerType(121, gopacket.LayerTypeMetadata{"OmniPeek", gopacket.DecodeFunc(decodeOmniPeek)})
 )
 
 var (
