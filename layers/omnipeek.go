@@ -17,18 +17,18 @@ Old Style Omnipeek/Wireshark header for legacy 802.11a/b/g packets
 typedef struct peek_hdr_s {
   uint8_t signal_dBm;       // signal dBm
   uint8_t noise_dBm;        // noise dBm
-  uint16_t packet_length;    // contains correct info
-  uint16_t slice_length;     // contains correct info
+  uint16_t packet_length;   // contains correct info
+  uint16_t slice_length;    // contains correct info
   uint8_t flags;            // only PEEK_CONTROL is filled based on IEEE80211 control frame or not
-  uint8_t status;            // PEEK_ENCRYPTED and PEEK_SHORT_PREAMBLE are the only valid bits
-  aptrace_timeval_t ts;       // replaced the original 64-bit field with what gettimeofday uses
+  uint8_t status;           // PEEK_ENCRYPTED and PEEK_SHORT_PREAMBLE are the only valid bits
+  aptrace_timeval_t ts;     // replaced the original 64-bit field with what gettimeofday uses
 
   // equivalent to the wireless_80211_private_hdr
-  uint8_t data_rate;          // data rate in 500Kbps
-  uint8_t channel;            // channel numbers 1-14 for 2.4GHz, 36-161 for 5GHz
+  uint8_t data_rate;        // data rate in 500Kbps
+  uint8_t channel;          // channel numbers 1-14 for 2.4GHz, 36-161 for 5GHz
 
-  uint8_t signal_strength;    // signal strength is a number between 0-100
-  uint8_t noise_strength;     // noise strength
+  uint8_t signal_strength;  // signal strength is a number between 0-100
+  uint8_t noise_strength;   // noise strength
 
 } __attribute__ ((packed)) peek_hdr_t;
 
@@ -36,40 +36,40 @@ New Style Omnipeek/Wireshark header for 802.11n packets
 
 typedef struct peek_hdr_11n_s {
 #define PEEK_HDR_MAGIC_VAL 0x00ffabcd
-  uint32_t magic_value;         // Always set to 0x00ffabcd
+  uint32_t magic_value;        // Always set to 0x00ffabcd
   uint8_t version;             // version 2 of the Omnipeak/Wireshark header
 
   // MediaSpecificPrivateHeader
-  uint32_t size;                // size of this structure
-  uint32_t type;                // Omnipeak expects this field to always be 6
+  uint32_t size;               // size of this structure
+  uint32_t type;               // Omnipeak expects this field to always be 6
 
   // Wireless80211PrivateHeaderCisco
-  uint16_t data_rate;           // PHY data rate (or MCS index for 802.11n/ac)
+  uint16_t data_rate;          // PHY data rate (or MCS index for 802.11n/ac)
 
   int16_t channel;             // channel numbers 1-14 for 2.4GHz, 36-161 for 5GHz
-  uint32_t frequency;           // frequency in Mhz (2346 for 2346 Mhz)
-  uint32_t band;                // see below for definitions
+  uint32_t frequency;          // frequency in Mhz (2346 for 2346 Mhz)
+  uint32_t band;               // see below for definitions
 
-  uint32_t dot11_ht_vht_flags;  // for 802.11n/ac only, see below for definitions
+  uint32_t dot11_ht_vht_flags; // for 802.11n/ac only, see below for definitions
 
   uint8_t signal_strength;     // signal strength is a % between 0-100
   uint8_t noise_strength;      // noise strength is a % between 0-100
-  int8_t signal_dbm;          // signal power (dBm)
-  int8_t noise_dbm;           // noise power (dBm)
-  int8_t signal1_dbm;         // not used
-  int8_t signal2_dbm;         // not used
-  int8_t signal3_dbm;         // not used
-  int8_t signal4_dbm;         // not used
-  int8_t noise1_dbm;          // not used
-  int8_t noise2_dbm;          // not used
-  int8_t noise3_dbm;          // not used
-  int8_t noise4_dbm;          // not used
+  int8_t signal_dbm;           // signal power (dBm)
+  int8_t noise_dbm;            // noise power (dBm)
+  int8_t signal1_dbm;          // not used
+  int8_t signal2_dbm;          // not used
+  int8_t signal3_dbm;          // not used
+  int8_t signal4_dbm;          // not used
+  int8_t noise1_dbm;           // not used
+  int8_t noise2_dbm;           // not used
+  int8_t noise3_dbm;           // not used
+  int8_t noise4_dbm;           // not used
 
-  uint16_t packet_length;    // contains correct info
-  uint16_t slice_length;     // contains correct info
-  uint8_t flags;            // only PEEK_CONTROL is filled based on IEEE80211 control frame or not
-  uint8_t status;           // PEEK_ENCRYPTED and PEEK_SHORT_PREAMBLE are the only valid bits
-  aptrace_timeval_t ts;      // replaced the original 64-bit field with what gettimeofday uses
+  uint16_t packet_length;      // contains correct info
+  uint16_t slice_length;       // contains correct info
+  uint8_t flags;               // only PEEK_CONTROL is filled based on IEEE80211 control frame or not
+  uint8_t status;              // PEEK_ENCRYPTED and PEEK_SHORT_PREAMBLE are the only valid bits
+  aptrace_timeval_t ts;        // replaced the original 64-bit field with what gettimeofday uses
 
 } __attribute__ ((packed)) peek_hdr_11n_t;
 
