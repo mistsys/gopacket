@@ -260,6 +260,8 @@ const (
 	Dot11InformationElementHTOperation          Dot11InformationElementID = 61
 	Dot11InformationElementIDReserved           Dot11InformationElementID = 68
 	Dot11InformationElementExtendedCapabilities Dot11InformationElementID = 127
+	Dot11InformationElementCiscoCCX1CKIP        Dot11InformationElementID = 133
+	Dot11InformationElementCiscoCCX3            Dot11InformationElementID = 149
 	Dot11InformationElementVHTCapabilities      Dot11InformationElementID = 191
 	Dot11InformationElementVHTOperation         Dot11InformationElementID = 192
 	Dot11InformationElementIDVendor             Dot11InformationElementID = 221
@@ -311,6 +313,10 @@ func (a Dot11InformationElementID) String() string {
 		return "VHT capabilities"
 	case Dot11InformationElementVHTOperation:
 		return "VHT operation"
+	case Dot11InformationElementCiscoCCX1CKIP:
+		return "Cisco CCX1 CKIP"
+	case Dot11InformationElementCiscoCCX3:
+		return "Cisco CCX3"
 	default:
 		return "Unknown information element id"
 	}
