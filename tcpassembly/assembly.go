@@ -21,11 +21,12 @@ package tcpassembly
 import (
 	"flag"
 	"fmt"
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/layers"
 	"log"
 	"sync"
 	"time"
+
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/layers"
 )
 
 var memLog = flag.Bool("assembly_memuse_log", false, "If true, the github.com/mistsys/gopacket/tcpassembly library will log information regarding its memory use every once in a while.")

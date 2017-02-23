@@ -11,13 +11,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mistsys/gopacket/dumpcommand"
-	"github.com/mistsys/gopacket/examples/util"
-	"github.com/mistsys/gopacket/pcap"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/mistsys/gopacket/dumpcommand"
+	"github.com/mistsys/gopacket/examples/util"
+	"github.com/mistsys/gopacket/pcap"
 )
 
 var iface = flag.String("i", "eth0", "Interface to read packets from")

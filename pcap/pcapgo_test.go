@@ -8,13 +8,14 @@ package pcap
 
 import (
 	"bytes"
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/layers"
-	"github.com/mistsys/gopacket/pcapgo"
 	"io/ioutil"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/layers"
+	"github.com/mistsys/gopacket/pcapgo"
 )
 
 func TestPCAPGoWrite(t *testing.T) {

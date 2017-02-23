@@ -74,8 +74,9 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 // SFlowRecord holds both flow sample records and counter sample records.

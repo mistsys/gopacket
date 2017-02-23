@@ -11,8 +11,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 // EthernetBroadcast is the broadcast MAC address used by Ethernet.

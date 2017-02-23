@@ -9,8 +9,9 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"hash/crc32"
+
+	"github.com/mistsys/gopacket"
 )
 
 // SCTP contains information on the top level of an SCTP packet.

@@ -7,8 +7,9 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 // FDDI contains the header for FDDI frames.

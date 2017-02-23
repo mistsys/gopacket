@@ -10,8 +10,9 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 const (

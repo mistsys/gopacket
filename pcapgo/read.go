@@ -15,6 +15,7 @@ import (
 
 	"bufio"
 	"compress/gzip"
+
 	"github.com/mistsys/gopacket"
 	"github.com/mistsys/gopacket/layers"
 )

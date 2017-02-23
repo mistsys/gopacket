@@ -11,13 +11,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/mistsys/gopacket"
 	"github.com/mistsys/gopacket/examples/util"
 	"github.com/mistsys/gopacket/layers"
 	"github.com/mistsys/gopacket/pcap"
 	"github.com/mistsys/gopacket/tcpassembly"
-	"log"
-	"time"
 )
 
 var iface = flag.String("i", "eth0", "Interface to get packets from")

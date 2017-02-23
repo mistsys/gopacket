@@ -10,9 +10,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"hash/crc32"
 	"strings"
+
+	"github.com/mistsys/gopacket"
 )
 
 // align calculates the number of bytes needed to align with the width

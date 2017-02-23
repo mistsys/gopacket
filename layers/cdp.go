@@ -14,8 +14,9 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 // CDPTLVType is the type of each TLV value in a CiscoDiscovery packet.

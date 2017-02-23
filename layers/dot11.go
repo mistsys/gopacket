@@ -13,9 +13,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"hash/crc32"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 // Dot11Flags contains the set of 8 flags in the IEEE 802.11 frame control
@@ -242,21 +243,26 @@ type Dot11InformationElementID uint8
 // TODO: Verify these element ids, and append more ids if more.
 
 const (
-	Dot11InformationElementIDSSID          Dot11InformationElementID = 0
-	Dot11InformationElementIDRates         Dot11InformationElementID = 1
-	Dot11InformationElementIDFHSet         Dot11InformationElementID = 2
-	Dot11InformationElementIDDSSet         Dot11InformationElementID = 3
-	Dot11InformationElementIDCFSet         Dot11InformationElementID = 4
-	Dot11InformationElementIDTIM           Dot11InformationElementID = 5
-	Dot11InformationElementIDIBSSSet       Dot11InformationElementID = 6
-	Dot11InformationElementIDChallenge     Dot11InformationElementID = 16
-	Dot11InformationElementIDERPInfo       Dot11InformationElementID = 42
-	Dot11InformationElementIDQOSCapability Dot11InformationElementID = 46
-	Dot11InformationElementIDERPInfo2      Dot11InformationElementID = 47
-	Dot11InformationElementIDRSNInfo       Dot11InformationElementID = 48
-	Dot11InformationElementIDESRates       Dot11InformationElementID = 50
-	Dot11InformationElementIDVendor        Dot11InformationElementID = 221
-	Dot11InformationElementIDReserved      Dot11InformationElementID = 68
+	Dot11InformationElementIDSSID               Dot11InformationElementID = 0
+	Dot11InformationElementIDRates              Dot11InformationElementID = 1
+	Dot11InformationElementIDFHSet              Dot11InformationElementID = 2
+	Dot11InformationElementIDDSSet              Dot11InformationElementID = 3
+	Dot11InformationElementIDCFSet              Dot11InformationElementID = 4
+	Dot11InformationElementIDTIM                Dot11InformationElementID = 5
+	Dot11InformationElementIDIBSSSet            Dot11InformationElementID = 6
+	Dot11InformationElementIDChallenge          Dot11InformationElementID = 16
+	Dot11InformationElementIDERPInfo            Dot11InformationElementID = 42
+	Dot11InformationElementHTCapabilities       Dot11InformationElementID = 45
+	Dot11InformationElementIDQOSCapability      Dot11InformationElementID = 46
+	Dot11InformationElementIDERPInfo2           Dot11InformationElementID = 47
+	Dot11InformationElementIDRSNInfo            Dot11InformationElementID = 48
+	Dot11InformationElementIDESRates            Dot11InformationElementID = 50
+	Dot11InformationElementHTOperation          Dot11InformationElementID = 61
+	Dot11InformationElementIDReserved           Dot11InformationElementID = 68
+	Dot11InformationElementExtendedCapabilities Dot11InformationElementID = 127
+	Dot11InformationElementVHTCapabilities      Dot11InformationElementID = 191
+	Dot11InformationElementVHTOperation         Dot11InformationElementID = 192
+	Dot11InformationElementIDVendor             Dot11InformationElementID = 221
 )
 
 // String provides a human readable string for Dot11InformationElementID.
@@ -283,6 +289,8 @@ func (a Dot11InformationElementID) String() string {
 		return "Challenge"
 	case Dot11InformationElementIDERPInfo:
 		return "ERPinfo"
+	case Dot11InformationElementHTCapabilities:
+		return "HT capabilities"
 	case Dot11InformationElementIDQOSCapability:
 		return "QOS capability"
 	case Dot11InformationElementIDERPInfo2:
@@ -291,10 +299,18 @@ func (a Dot11InformationElementID) String() string {
 		return "RSNinfo"
 	case Dot11InformationElementIDESRates:
 		return "ESrates"
+	case Dot11InformationElementHTOperation:
+		return "HT operation"
 	case Dot11InformationElementIDVendor:
 		return "Vendor"
 	case Dot11InformationElementIDReserved:
 		return "Reserved"
+	case Dot11InformationElementExtendedCapabilities:
+		return "Extended capabilities"
+	case Dot11InformationElementVHTCapabilities:
+		return "VHT capabilities"
+	case Dot11InformationElementVHTOperation:
+		return "VHT operation"
 	default:
 		return "Unknown information element id"
 	}

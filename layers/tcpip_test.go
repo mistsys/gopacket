@@ -7,9 +7,10 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"net"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 const (

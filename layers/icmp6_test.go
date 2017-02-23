@@ -8,10 +8,11 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"net"
 	"reflect"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 // testPacketICMPv6 is the packet:

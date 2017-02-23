@@ -6,8 +6,9 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 // vrrpPacketPriority100 is the packet:

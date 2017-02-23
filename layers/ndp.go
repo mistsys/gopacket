@@ -11,8 +11,9 @@ package layers
 
 import (
 	"fmt"
-	"github.com/mistsys/gopacket"
 	"net"
+
+	"github.com/mistsys/gopacket"
 )
 
 type NDPChassisType uint8

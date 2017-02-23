@@ -7,9 +7,10 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"reflect"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 // VXLAN is specifed in RFC 7348

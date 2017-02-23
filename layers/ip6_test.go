@@ -8,10 +8,11 @@ package layers
 
 import (
 	"bytes"
-	"github.com/mistsys/gopacket"
 	"net"
 	"reflect"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 func TestSerializeIPv6HeaderTLVOptions(t *testing.T) {

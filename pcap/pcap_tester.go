@@ -13,12 +13,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mistsys/gopacket/pcap"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/mistsys/gopacket/pcap"
 )
 
 var mode = flag.String("mode", "basic", "One of: basic,filtered,timestamp")

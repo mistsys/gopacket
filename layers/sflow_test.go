@@ -6,9 +6,10 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
 	"reflect"
 	"testing"
+
+	"github.com/mistsys/gopacket"
 )
 
 // Test packet collected from live network. See the test below for contents

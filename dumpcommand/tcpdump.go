@@ -12,12 +12,13 @@ package dumpcommand
 import (
 	"flag"
 	"fmt"
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/ip4defrag"
-	"github.com/mistsys/gopacket/layers" // pulls in all layers decoders
 	"log"
 	"os"
 	"time"
+
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/ip4defrag"
+	"github.com/mistsys/gopacket/layers" // pulls in all layers decoders
 )
 
 var (

@@ -22,10 +22,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/layers"
-	"github.com/mistsys/gopacket/pcap"
-	"github.com/mistsys/gopacket/tcpassembly"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -33,6 +29,11 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"time"
+
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/layers"
+	"github.com/mistsys/gopacket/pcap"
+	"github.com/mistsys/gopacket/tcpassembly"
 )
 
 var decodeLazy *bool = flag.Bool("lazy", false, "If true, use lazy decoding")
