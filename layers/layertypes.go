@@ -123,6 +123,7 @@ var (
 	LayerTypeVRRP                        = gopacket.RegisterLayerType(119, gopacket.LayerTypeMetadata{"VRRP", gopacket.DecodeFunc(decodeVRRP)})
 	LayerTypeEAPOLKey                    = gopacket.RegisterLayerType(120, gopacket.LayerTypeMetadata{"EAPOLKey", gopacket.DecodeFunc(decodeEAPOLKey)})
 	LayerTypeOmniPeek                    = gopacket.RegisterLayerType(121, gopacket.LayerTypeMetadata{"OmniPeek", gopacket.DecodeFunc(decodeOmniPeek)})
+	LayerTypeCiscoAP                     = gopacket.RegisterLayerType(122, gopacket.LayerTypeMetadata{"CiscoAP", gopacket.DecodeFunc(decodeCiscoAP)})
 )
 
 var (
