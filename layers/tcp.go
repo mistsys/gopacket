@@ -142,9 +142,7 @@ func (t *TCP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOpt
 		}
 	}
 	if opts.FixLengths {
-		if rem := optionLength % 4; rem != 0 {
-			t.Padding = lotsOfZeros[:4-rem]
-		}
+		t.Padding = lotsOfZeros[:optionLength%4]
 		t.DataOffset = uint8((len(t.Padding) + optionLength + 20) / 4)
 	}
 	bytes, err := b.PrependBytes(20 + optionLength + len(t.Padding))
@@ -170,7 +168,7 @@ func (t *TCP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOpt
 			}
 			bytes[start+1] = o.OptionLength
 			copy(bytes[start+2:start+len(o.OptionData)+2], o.OptionData)
-			start += len(o.OptionData) + 2
+			start += int(o.OptionLength)
 		}
 	}
 	copy(bytes[start:], t.Padding)
@@ -186,10 +184,6 @@ func (t *TCP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOpt
 	}
 	binary.BigEndian.PutUint16(bytes[16:], t.Checksum)
 	return nil
-}
-
-func (t *TCP) ComputeChecksum() (uint16, error) {
-	return t.computeChecksum(append(t.Contents, t.Payload...), IPProtocolTCP)
 }
 
 func (t *TCP) flagsAndOffset() uint16 {
@@ -225,10 +219,6 @@ func (t *TCP) flagsAndOffset() uint16 {
 }
 
 func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
-	if len(data) < 20 {
-		df.SetTruncated()
-		return fmt.Errorf("Invalid TCP header. Length %d less than 20", len(data))
-	}
 	tcp.SrcPort = TCPPort(binary.BigEndian.Uint16(data[0:2]))
 	tcp.sPort = data[0:2]
 	tcp.DstPort = TCPPort(binary.BigEndian.Uint16(data[2:4]))
@@ -248,12 +238,7 @@ func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	tcp.Window = binary.BigEndian.Uint16(data[14:16])
 	tcp.Checksum = binary.BigEndian.Uint16(data[16:18])
 	tcp.Urgent = binary.BigEndian.Uint16(data[18:20])
-	if tcp.Options == nil {
-		// Pre-allocate to avoid allocating a slice.
-		tcp.Options = tcp.opts[:0]
-	} else {
-		tcp.Options = tcp.Options[:0]
-	}
+	tcp.Options = tcp.opts[:0]
 	if tcp.DataOffset < 5 {
 		return fmt.Errorf("Invalid TCP data offset %d < 5", tcp.DataOffset)
 	}
@@ -269,6 +254,10 @@ func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	// From here on, data points just to the header options.
 	data = data[20:dataStart]
 	for len(data) > 0 {
+		if tcp.Options == nil {
+			// Pre-allocate to avoid allocating a slice.
+			tcp.Options = tcp.opts[:0]
+		}
 		tcp.Options = append(tcp.Options, TCPOption{OptionType: TCPOptionKind(data[0])})
 		opt := &tcp.Options[len(tcp.Options)-1]
 		switch opt.OptionType {
@@ -279,15 +268,10 @@ func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 		case TCPOptionKindNop: // 1 byte padding
 			opt.OptionLength = 1
 		default:
-			if len(data) < 2 {
-				df.SetTruncated()
-				return fmt.Errorf("Invalid TCP option length. Length %d less than 2", len(data))
-			}
 			opt.OptionLength = data[1]
 			if opt.OptionLength < 2 {
 				return fmt.Errorf("Invalid TCP option length %d < 2", opt.OptionLength)
 			} else if int(opt.OptionLength) > len(data) {
-				df.SetTruncated()
 				return fmt.Errorf("Invalid TCP option length %d exceeds remaining %d bytes", opt.OptionLength, len(data))
 			}
 			opt.OptionData = data[2:opt.OptionLength]
@@ -302,11 +286,7 @@ func (t *TCP) CanDecode() gopacket.LayerClass {
 }
 
 func (t *TCP) NextLayerType() gopacket.LayerType {
-	lt := t.DstPort.LayerType()
-	if lt == gopacket.LayerTypePayload {
-		lt = t.SrcPort.LayerType()
-	}
-	return lt
+	return gopacket.LayerTypePayload
 }
 
 func decodeTCP(data []byte, p gopacket.PacketBuilder) error {
@@ -317,21 +297,9 @@ func decodeTCP(data []byte, p gopacket.PacketBuilder) error {
 	if err != nil {
 		return err
 	}
-	if p.DecodeOptions().DecodeStreamsAsDatagrams {
-		return p.NextDecoder(tcp.NextLayerType())
-	} else {
-		return p.NextDecoder(gopacket.LayerTypePayload)
-	}
+	return p.NextDecoder(gopacket.LayerTypePayload)
 }
 
 func (t *TCP) TransportFlow() gopacket.Flow {
 	return gopacket.NewFlow(EndpointTCPPort, t.sPort, t.dPort)
-}
-
-// For testing only
-func (t *TCP) SetInternalPortsForTesting() {
-	t.sPort = make([]byte, 2)
-	t.dPort = make([]byte, 2)
-	binary.BigEndian.PutUint16(t.sPort, uint16(t.SrcPort))
-	binary.BigEndian.PutUint16(t.dPort, uint16(t.DstPort))
 }

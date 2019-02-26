@@ -1,15 +1,10 @@
 // Copyright 2013 Google, Inc. All rights reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the LICENSE file in the root of the source
-// tree.
-
 // Package ip4defrag implements a IPv4 defragmenter
 package ip4defrag
 
 import (
 	"container/list"
-	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -21,7 +16,7 @@ import (
 
 // Quick and Easy to use debug code to trace
 // how defrag works.
-var debug debugging = false // or flip to true
+var debug debugging = false // or flip to false
 type debugging bool
 
 func (d debugging) Printf(format string, args ...interface{}) {
@@ -30,13 +25,11 @@ func (d debugging) Printf(format string, args ...interface{}) {
 	}
 }
 
-// Constants determining how to handle fragments.
-// Reference RFC 791, page 25
 const (
-	IPv4MinimumFragmentSize    = 8     // Minimum size of a single fragment
-	IPv4MaximumSize            = 65535 // Maximum size of a fragment (2^16)
-	IPv4MaximumFragmentOffset  = 8183  // Maximum offset of a fragment
-	IPv4MaximumFragmentListLen = 8192  // Back out if we get more than this many fragments
+	IPv4MinimumFragmentSize    = 576
+	IPv4MaximumSize            = 65535
+	IPv4MaximumFragmentOffset  = 8189
+	IPv4MaximumFragmentListLen = 8
 )
 
 // DefragIPv4 takes in an IPv4 packet with a fragment payload.
@@ -74,61 +67,50 @@ const (
 //}
 //
 func (d *IPv4Defragmenter) DefragIPv4(in *layers.IPv4) (*layers.IPv4, error) {
-	return d.DefragIPv4WithTimestamp(in, time.Now())
-}
-
-// DefragIPv4WithTimestamp provides functionality of DefragIPv4 with
-// an additional timestamp parameter which is used for discarding
-// old fragments instead of time.Now()
-//
-// This is useful when operating on pcap files instead of live captured data
-//
-func (d *IPv4Defragmenter) DefragIPv4WithTimestamp(in *layers.IPv4, t time.Time) (*layers.IPv4, error) {
 	// check if we need to defrag
 	if st := d.dontDefrag(in); st == true {
-		debug.Printf("defrag: do nothing, do not need anything")
 		return in, nil
 	}
 	// perfom security checks
-	if err := d.securityChecks(in); err != nil {
-		debug.Printf("defrag: alert security check")
+	st, err := d.securityChecks(in)
+	if err != nil || st == false {
 		return nil, err
 	}
 
 	// ok, got a fragment
-	debug.Printf("defrag: got a new fragment in.Id=%d in.FragOffset=%d in.Flags=%d\n",
+	debug.Printf("defrag: got in.Id=%d in.FragOffset=%d in.Flags=%d\n",
 		in.Id, in.FragOffset*8, in.Flags)
 
-	// have we already seen a flow between src/dst with that Id?
+	// do we already has seen a flow between src/dst with that Id
 	ipf := newIPv4(in)
 	var fl *fragmentList
 	var exist bool
 	d.Lock()
 	fl, exist = d.ipFlows[ipf]
 	if !exist {
-		debug.Printf("defrag: unknown flow, creating a new one\n")
+		debug.Printf("defrag: creating a new flow\n")
 		fl = new(fragmentList)
 		d.ipFlows[ipf] = fl
 	}
 	d.Unlock()
 	// insert, and if final build it
-	out, err2 := fl.insert(in, t)
+	out, err2 := fl.insert(in)
 
 	// at last, if we hit the maximum frag list len
 	// without any defrag success, we just drop everything and
 	// raise an error
 	if out == nil && fl.List.Len()+1 > IPv4MaximumFragmentListLen {
-		d.flush(ipf)
+		d.Lock()
+		fl = new(fragmentList)
+		d.ipFlows[ipf] = fl
+		d.Unlock()
 		return nil, fmt.Errorf("defrag: Fragment List hits its maximum"+
-			"size(%d), without success. Flushing the list",
+			"size(%d), without sucess. Flushing the list",
 			IPv4MaximumFragmentListLen)
 	}
 
 	// if we got a packet, it's a new one, and he is defragmented
 	if out != nil {
-		// when defrag is done for a flow between two ip
-		// clean the list
-		d.flush(ipf)
 		return out, nil
 	}
 	return nil, err2
@@ -150,13 +132,6 @@ func (d *IPv4Defragmenter) DiscardOlderThan(t time.Time) int {
 	return nb
 }
 
-// flush the fragment list for a particular flow
-func (d *IPv4Defragmenter) flush(ipf ipv4) {
-	d.Lock()
-	delete(d.ipFlows, ipf)
-	d.Unlock()
-}
-
 // dontDefrag returns true if the IPv4 packet do not need
 // any defragmentation
 func (d *IPv4Defragmenter) dontDefrag(ip *layers.IPv4) bool {
@@ -172,29 +147,21 @@ func (d *IPv4Defragmenter) dontDefrag(ip *layers.IPv4) bool {
 }
 
 // securityChecks performs the needed security checks
-func (d *IPv4Defragmenter) securityChecks(ip *layers.IPv4) error {
-	fragSize := ip.Length - uint16(ip.IHL)*4
-
-	// don't allow small fragments outside of specification
-	if fragSize < IPv4MinimumFragmentSize {
-		return fmt.Errorf("defrag: fragment too small "+
-			"(handcrafted? %d < %d)", fragSize, IPv4MinimumFragmentSize)
-	}
-
+func (d *IPv4Defragmenter) securityChecks(ip *layers.IPv4) (bool, error) {
 	// don't allow too big fragment offset
 	if ip.FragOffset > IPv4MaximumFragmentOffset {
-		return fmt.Errorf("defrag: fragment offset too big "+
+		return false, fmt.Errorf("defrag: fragment offset too big "+
 			"(handcrafted? %d > %d)", ip.FragOffset, IPv4MaximumFragmentOffset)
 	}
 	fragOffset := ip.FragOffset * 8
 
 	// don't allow fragment that would oversize an IP packet
 	if fragOffset+ip.Length > IPv4MaximumSize {
-		return fmt.Errorf("defrag: fragment will overrun "+
-			"(handcrafted? %d > %d)", fragOffset+ip.Length, IPv4MaximumSize)
+		return false, fmt.Errorf("defrag: fragment will overrun "+
+			"(handcrafted? %d > %d)", ip.FragOffset*8+ip.Length, IPv4MaximumSize)
 	}
 
-	return nil
+	return true, nil
 }
 
 // fragmentList holds a container/list used to contains IP
@@ -213,42 +180,26 @@ type fragmentList struct {
 // It use the following strategy : we are inserting fragment based
 // on their offset, latest first. This is sometimes called BSD-Right.
 // See: http://www.sans.org/reading-room/whitepapers/detection/ip-fragment-reassembly-scapy-33969
-func (f *fragmentList) insert(in *layers.IPv4, t time.Time) (*layers.IPv4, error) {
+func (f *fragmentList) insert(in *layers.IPv4) (*layers.IPv4, error) {
 	// TODO: should keep a copy of *in in the list
-	// or not (ie the packet source is reliable) ? -> depends on Lazy / last packet
+	// or not (ie the packet source is reliable) ?
 	fragOffset := in.FragOffset * 8
 	if fragOffset >= f.Highest {
 		f.List.PushBack(in)
 	} else {
 		for e := f.List.Front(); e != nil; e = e.Next() {
 			frag, _ := e.Value.(*layers.IPv4)
-			if in.FragOffset == frag.FragOffset {
-				// TODO: what if we receive a fragment
-				// that begins with duplicate data but
-				// *also* has new data? For example:
-				//
-				// AAAA
-				//     BB
-				//     BBCC
-				//         DDDD
-				//
-				// In this situation we completely
-				// ignore CC and the complete packet can
-				// never be reassembled.
-				debug.Printf("defrag: ignoring frag %d as we already have it (duplicate?)\n",
-					fragOffset)
-				return nil, nil
-			}
-			if in.FragOffset < frag.FragOffset {
-				debug.Printf("defrag: inserting frag %d before existing frag %d\n",
+			if in.FragOffset <= frag.FragOffset {
+				debug.Printf("defrag: inserting frag %d before existing frag %d \n",
 					fragOffset, frag.FragOffset*8)
 				f.List.InsertBefore(in, e)
 				break
 			}
 		}
 	}
-
-	f.LastSeen = t
+	// packet.Metadata().Timestamp should have been better, but
+	// we don't have this info there...
+	f.LastSeen = time.Now()
 
 	fragLength := in.Length - 20
 	// After inserting the Fragment, we update the counters
@@ -277,7 +228,7 @@ func (f *fragmentList) insert(in *layers.IPv4, t time.Time) (*layers.IPv4, error
 // See Insert for more details.
 func (f *fragmentList) build(in *layers.IPv4) (*layers.IPv4, error) {
 	var final []byte
-	var currentOffset uint16
+	var currentOffset uint16 = 0
 
 	debug.Printf("defrag: building the datagram \n")
 	for e := f.List.Front(); e != nil; e = e.Next() {
@@ -292,7 +243,7 @@ func (f *fragmentList) build(in *layers.IPv4) (*layers.IPv4, error) {
 			debug.Printf("defrag: building - overlapping, starting at %d\n",
 				startAt)
 			if startAt > frag.Length-20 {
-				return nil, errors.New("defrag: building - invalid fragment")
+				return nil, fmt.Errorf("defrag: building - invalid fragment")
 			}
 			final = append(final, frag.Payload[startAt:]...)
 			currentOffset = currentOffset + frag.FragOffset*8
@@ -300,7 +251,7 @@ func (f *fragmentList) build(in *layers.IPv4) (*layers.IPv4, error) {
 			// Houston - we have an hole !
 			debug.Printf("defrag: hole found while building, " +
 				"stopping the defrag process\n")
-			return nil, errors.New("defrag: building - hole found")
+			return nil, fmt.Errorf("defrag: building - hole found")
 		}
 		debug.Printf("defrag: building - next is %d\n", currentOffset)
 	}
@@ -311,7 +262,7 @@ func (f *fragmentList) build(in *layers.IPv4) (*layers.IPv4, error) {
 		IHL:        in.IHL,
 		TOS:        in.TOS,
 		Length:     f.Highest,
-		Id:         in.Id,
+		Id:         0,
 		Flags:      0,
 		FragOffset: 0,
 		TTL:        in.TTL,
