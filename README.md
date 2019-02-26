@@ -1,10 +1,10 @@
 # GoPacket
 
 This library provides packet decoding capabilities for Go.
-See [godoc](https://godoc.org/github.com/mistsys/gopacket) for more details.
+See [godoc](https://godoc.org/github.com/google/gopacket) for more details.
 
-[![Build Status](https://travis-ci.org/mistsys/gopacket.svg?branch=master)](https://travis-ci.org/mistsys/gopacket)
-[![GoDoc](https://godoc.org/github.com/mistsys/gopacket?status.svg)](https://godoc.org/github.com/mistsys/gopacket)
+[![Build Status](https://travis-ci.org/google/gopacket.svg?branch=master)](https://travis-ci.org/google/gopacket)
+[![GoDoc](https://godoc.org/github.com/google/gopacket?status.svg)](https://godoc.org/github.com/google/gopacket)
 
 Minimum Go version required is 1.5.
 

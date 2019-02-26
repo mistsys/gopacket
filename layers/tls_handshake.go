@@ -7,7 +7,7 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
+	"github.com/google/gopacket"
 )
 
 // TLSHandshakeRecord defines the structure of a Handshare Record

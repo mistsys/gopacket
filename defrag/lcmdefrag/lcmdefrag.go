@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/layers"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 )
 
 const (

@@ -29,7 +29,7 @@ package layers
 import (
   "fmt"
 
-  "github.com/mistsys/gopacket"
+  "github.com/google/gopacket"
 )
 
 `
