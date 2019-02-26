@@ -9,8 +9,8 @@ package lcmdefrag
 import (
 	"testing"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/layers"
 )
 
 var (

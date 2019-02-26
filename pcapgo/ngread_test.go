@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
+	"github.com/mistsys/gopacket"
+	"github.com/mistsys/gopacket/layers"
 )
 
 func ngMustDecode(s string) []byte {

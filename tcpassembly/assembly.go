@@ -9,7 +9,7 @@
 // The tcpassembly package implements uni-directional TCP reassembly, for use in
 // packet-sniffing applications.  The caller reads packets off the wire, then
 // presents them to an Assembler in the form of gopacket layers.TCP packets
-// (github.com/mistsys/gopacket, github.com/google/gopacket/layers).
+// (github.com/mistsys/gopacket, github.com/mistsys/gopacket/layers).
 //
 // The Assembler uses a user-supplied
 // StreamFactory to create a user-defined Stream interface, then passes packet

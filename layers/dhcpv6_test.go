@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/google/gopacket"
+	"github.com/mistsys/gopacket"
 )
 
 func TestDHCPv6EncodeRequest(t *testing.T) {
