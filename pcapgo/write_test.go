@@ -48,23 +48,6 @@ func TestWritePacket(t *testing.T) {
 	}
 }
 
-func BenchmarkWritePacket(b *testing.B) {
-	b.StopTimer()
-	ci := gopacket.CaptureInfo{
-		Timestamp:     time.Unix(0x01020304, 0xAA*1000),
-		Length:        0xABCD,
-		CaptureLength: 10,
-	}
-	data := []byte{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}
-	var buf bytes.Buffer
-	w := NewWriter(&buf)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		w.WritePacket(ci, data)
-	}
-}
-
 func TestCaptureInfoErrors(t *testing.T) {
 	data := []byte{1, 2, 3, 4}
 	ts := time.Unix(0, 0)

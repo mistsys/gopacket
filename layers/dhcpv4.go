@@ -9,6 +9,7 @@ package layers
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 
@@ -124,7 +125,6 @@ func (d *DHCPv4) LayerType() gopacket.LayerType { return LayerTypeDHCPv4 }
 
 // DecodeFromBytes decodes the given bytes into this layer.
 func (d *DHCPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
-	d.Options = d.Options[:0]
 	d.Operation = DHCPOp(data[0])
 	d.HardwareType = LinkType(data[1])
 	d.HardwareLen = data[2]
@@ -140,7 +140,7 @@ func (d *DHCPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 	d.ServerName = data[44:108]
 	d.File = data[108:236]
 	if binary.BigEndian.Uint32(data[236:240]) != DHCPMagic {
-		return InvalidMagicCookie
+		return errors.New("Bad DHCP header")
 	}
 
 	if len(data) <= 240 {
@@ -161,12 +161,7 @@ func (d *DHCPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 			break
 		}
 		d.Options = append(d.Options, o)
-		// Check if the option is a single byte pad
-		if o.Type == DHCPOptPad {
-			start++
-		} else {
-			start += int(o.Length) + 2
-		}
+		start += int(o.Length) + 2
 	}
 	return nil
 }
@@ -175,11 +170,7 @@ func (d *DHCPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 func (d *DHCPv4) Len() uint16 {
 	n := uint16(240)
 	for _, o := range d.Options {
-		if o.Type == DHCPOptPad {
-			n++
-		} else {
-			n += uint16(o.Length) + 2
-		}
+		n += uint16(o.Length) + 2
 	}
 	n++ // for opt end
 	return n
@@ -190,6 +181,9 @@ func (d *DHCPv4) Len() uint16 {
 // See the docs for gopacket.SerializableLayer for more info.
 func (d *DHCPv4) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
 	plen := int(d.Len())
+	if plen < 300 {
+		plen = 300
+	}
 
 	data, err := b.PrependBytes(plen)
 	if err != nil {
@@ -221,12 +215,7 @@ func (d *DHCPv4) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.Serialize
 			if err := o.encode(data[offset:]); err != nil {
 				return err
 			}
-			// A pad option is only a single byte
-			if o.Type == DHCPOptPad {
-				offset++
-			} else {
-				offset += 2 + len(o.Data)
-			}
+			offset += 2 + len(o.Data)
 		}
 		optend := NewDHCPOption(DHCPOptEnd, nil)
 		if err := optend.encode(data[offset:]); err != nil {
@@ -538,6 +527,9 @@ func (o *DHCPOption) encode(b []byte) error {
 	case DHCPOptPad, DHCPOptEnd:
 		b[0] = byte(o.Type)
 	default:
+		if o.Length > 253 {
+			return errors.New("data too long to encode")
+		}
 		b[0] = byte(o.Type)
 		b[1] = o.Length
 		copy(b[2:], o.Data)
@@ -548,38 +540,21 @@ func (o *DHCPOption) encode(b []byte) error {
 func (o *DHCPOption) decode(data []byte) error {
 	if len(data) < 1 {
 		// Pad/End have a length of 1
-		return DecOptionNotEnoughData
+		return errors.New("Not enough data to decode")
 	}
 	o.Type = DHCPOpt(data[0])
 	switch o.Type {
 	case DHCPOptPad, DHCPOptEnd:
 		o.Data = nil
 	default:
-		if len(data) < 2 {
-			return DecOptionNotEnoughData
+		if len(data) < 3 {
+			return errors.New("Not enough data to decode")
 		}
 		o.Length = data[1]
-		if int(o.Length) > len(data[2:]) {
-			return DecOptionMalformed
+		if o.Length > 253 {
+			return errors.New("data too long to decode")
 		}
-		o.Data = data[2 : 2+int(o.Length)]
+		o.Data = data[2 : 2+o.Length]
 	}
 	return nil
 }
-
-// DHCPv4Error is used for constant errors for DHCPv4. It is needed for test asserts.
-type DHCPv4Error string
-
-// DHCPv4Error implements error interface.
-func (d DHCPv4Error) Error() string {
-	return string(d)
-}
-
-const (
-	// DecOptionNotEnoughData is returned when there is not enough data during option's decode process
-	DecOptionNotEnoughData = DHCPv4Error("Not enough data to decode")
-	// DecOptionMalformed is returned when the option is malformed
-	DecOptionMalformed = DHCPv4Error("Option is malformed")
-	// InvalidMagicCookie is returned when Magic cookie is missing into BOOTP header
-	InvalidMagicCookie = DHCPv4Error("Bad DHCP header")
-)

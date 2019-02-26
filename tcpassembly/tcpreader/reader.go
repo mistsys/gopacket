@@ -12,7 +12,7 @@
 // The io.Reader interface, on the other hand, is used throughout much of Go
 // code as an easy mechanism for reading in data streams and decoding them.  For
 // example, the net/http package provides the ReadRequest function, which can
-// parse an HTTP request from a live data stream, just what we'd want when
+// parase an HTTP request from a live data stream, just what we'd want when
 // sniffing HTTP traffic.  Using ReaderStream, this is relatively easy to set
 // up:
 //
@@ -114,7 +114,6 @@ type ReaderStream struct {
 	initiated    bool
 }
 
-// ReaderStreamOptions provides user-resettable options for a ReaderStream.
 type ReaderStreamOptions struct {
 	// LossErrors determines whether this stream will return
 	// ReaderStreamDataLoss errors from its Read function whenever it
@@ -159,7 +158,7 @@ func (r *ReaderStream) stripEmpty() {
 
 // DataLost is returned by the ReaderStream's Read function when it encounters
 // a Reassembly with Skip != 0.
-var DataLost = errors.New("lost data")
+var DataLost error = errors.New("lost data")
 
 // Read implements io.Reader's Read function.
 // Given a byte slice, it will either copy a non-zero number of bytes into

@@ -18,7 +18,6 @@ package routing
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"sort"
@@ -92,14 +91,15 @@ func (r *router) Route(dst net.IP) (iface *net.Interface, gateway, preferredSrc 
 }
 
 func (r *router) RouteWithSrc(input net.HardwareAddr, src, dst net.IP) (iface *net.Interface, gateway, preferredSrc net.IP, err error) {
+	length := len(dst)
 	var ifaceIndex int
-	switch {
-	case dst.To4() != nil:
+	switch length {
+	case 4:
 		ifaceIndex, gateway, preferredSrc, err = r.route(r.v4, input, src, dst)
-	case dst.To16() != nil:
+	case 16:
 		ifaceIndex, gateway, preferredSrc, err = r.route(r.v6, input, src, dst)
 	default:
-		err = errors.New("IP is not valid as IPv4 or IPv6")
+		err = fmt.Errorf("IP length is not 4 or 16")
 		return
 	}
 
@@ -108,10 +108,10 @@ func (r *router) RouteWithSrc(input net.HardwareAddr, src, dst net.IP) (iface *n
 
 	iface = &r.ifaces[ifaceIndex]
 	if preferredSrc == nil {
-		switch {
-		case dst.To4() != nil:
+		switch length {
+		case 4:
 			preferredSrc = r.addrs[ifaceIndex].v4
-		case dst.To16() != nil:
+		case 16:
 			preferredSrc = r.addrs[ifaceIndex].v6
 		}
 	}
@@ -207,35 +207,35 @@ loop:
 	}
 	sort.Sort(rtr.v4)
 	sort.Sort(rtr.v6)
-	ifaces, err := net.Interfaces()
-	if err != nil {
+	if ifaces, err := net.Interfaces(); err != nil {
 		return nil, err
-	}
-	for i, iface := range ifaces {
-		if i != iface.Index-1 {
-			return nil, fmt.Errorf("out of order iface %d = %v", i, iface)
-		}
-		rtr.ifaces = append(rtr.ifaces, iface)
-		var addrs ipAddrs
-		ifaceAddrs, err := iface.Addrs()
-		if err != nil {
-			return nil, err
-		}
-		for _, addr := range ifaceAddrs {
-			if inet, ok := addr.(*net.IPNet); ok {
-				// Go has a nasty habit of giving you IPv4s as ::ffff:1.2.3.4 instead of 1.2.3.4.
-				// We want to use mapped v4 addresses as v4 preferred addresses, never as v6
-				// preferred addresses.
-				if v4 := inet.IP.To4(); v4 != nil {
-					if addrs.v4 == nil {
-						addrs.v4 = v4
+	} else {
+		for i, iface := range ifaces {
+			if i != iface.Index-1 {
+				return nil, fmt.Errorf("out of order iface %d = %v", i, iface)
+			}
+			rtr.ifaces = append(rtr.ifaces, iface)
+			var addrs ipAddrs
+			if ifaceAddrs, err := iface.Addrs(); err != nil {
+				return nil, err
+			} else {
+				for _, addr := range ifaceAddrs {
+					if inet, ok := addr.(*net.IPNet); ok {
+						// Go has a nasty habit of giving you IPv4s as ::ffff:1.2.3.4 instead of 1.2.3.4.
+						// We want to use mapped v4 addresses as v4 preferred addresses, never as v6
+						// preferred addresses.
+						if v4 := inet.IP.To4(); v4 != nil {
+							if addrs.v4 == nil {
+								addrs.v4 = v4
+							}
+						} else if addrs.v6 == nil {
+							addrs.v6 = inet.IP
+						}
 					}
-				} else if addrs.v6 == nil {
-					addrs.v6 = inet.IP
 				}
 			}
+			rtr.addrs = append(rtr.addrs, addrs)
 		}
-		rtr.addrs = append(rtr.addrs, addrs)
 	}
 	return rtr, nil
 }

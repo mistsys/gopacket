@@ -9,14 +9,13 @@
 package bsdbpf
 
 import (
-	"errors"
+	"github.com/mistsys/gopacket"
+	"golang.org/x/sys/unix"
+
 	"fmt"
 	"syscall"
 	"time"
 	"unsafe"
-
-	"github.com/mistsys/gopacket"
-	"golang.org/x/sys/unix"
 )
 
 const wordSize = int(unsafe.Sizeof(uintptr(0)))
@@ -197,7 +196,7 @@ func (b *BPFSniffer) ReadPacketData() ([]byte, gopacket.CaptureInfo, error) {
 			CaptureLength: 0,
 			Length:        0,
 		}
-		return nil, captureInfo, errors.New("BPF captured frame received with corrupted BpfHdr struct.")
+		return nil, captureInfo, fmt.Errorf("BPF captured frame received with corrupted BpfHdr struct.")
 	}
 
 	rawFrame := b.readBuffer[frameStart : frameStart+int(hdr.Caplen)]
