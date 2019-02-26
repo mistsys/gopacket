@@ -10,7 +10,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/mistsys/gopacket"
+	"github.com/google/gopacket"
 )
 
 const (

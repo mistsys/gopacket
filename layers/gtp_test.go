@@ -8,7 +8,7 @@
 package layers
 
 import (
-	"github.com/mistsys/gopacket"
+	"github.com/google/gopacket"
 	"reflect"
 	"testing"
 )

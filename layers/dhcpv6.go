@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/mistsys/gopacket"
+	"github.com/google/gopacket"
 )
 
 // DHCPv6MsgType represents a DHCPv6 operation

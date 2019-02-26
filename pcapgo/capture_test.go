@@ -10,9 +10,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/mistsys/gopacket"
-	"github.com/mistsys/gopacket/layers"
-	"github.com/mistsys/gopacket/pcapgo"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcapgo"
 )
 
 func Example_captureEthernet() {
