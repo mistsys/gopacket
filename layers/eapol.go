@@ -8,6 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/mistsys/gopacket"
 )
@@ -32,6 +33,16 @@ func (e *EAPOL) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	return nil
 }
 
+// SerializeTo writes the serialized form of this layer into the
+// SerializationBuffer, implementing gopacket.SerializableLayer
+func (e *EAPOL) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+	bytes, _ := b.PrependBytes(4)
+	bytes[0] = e.Version
+	bytes[1] = byte(e.Type)
+	binary.BigEndian.PutUint16(bytes[2:], e.Length)
+	return nil
+}
+
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
 func (e *EAPOL) CanDecode() gopacket.LayerClass {
 	return LayerTypeEAPOL
@@ -47,92 +58,237 @@ func decodeEAPOL(data []byte, p gopacket.PacketBuilder) error {
 	return decodingLayerDecoder(e, data, p)
 }
 
-type KeyInfo uint16
+// EAPOLKeyDescriptorType is an enumeration of key descriptor types
+// as specified by 802.1x in the EAPOL-Key frame
+type EAPOLKeyDescriptorType uint8
 
+// Enumeration of EAPOLKeyDescriptorType
 const (
-	KeyInfo_DescriptorVersion KeyInfo = 1 << 0
-	KeyInfo_Type
-	KeyInfo_Install
-	KeyInfo_ACK
-	KeyInfo_MIC
-	KeyInfo_Secure
-	KeyInfo_Error
-	KeyInfo_Request
-	KeyInfo_EncryptedKeyData
-	KeyInfo_SMKMessage
+	EAPOLKeyDescriptorTypeRC4   EAPOLKeyDescriptorType = 1
+	EAPOLKeyDescriptorTypeDot11 EAPOLKeyDescriptorType = 2
+	EAPOLKeyDescriptorTypeWPA   EAPOLKeyDescriptorType = 254
 )
 
+func (kdt EAPOLKeyDescriptorType) String() string {
+	switch kdt {
+	case EAPOLKeyDescriptorTypeRC4:
+		return "RC4"
+	case EAPOLKeyDescriptorTypeDot11:
+		return "802.11"
+	case EAPOLKeyDescriptorTypeWPA:
+		return "WPA"
+	default:
+		return fmt.Sprintf("unknown descriptor type %d", kdt)
+	}
+}
+
+// EAPOLKeyDescriptorVersion is an enumeration of versions specifying the
+// encryption algorithm for the key data and the authentication for the
+// message integrity code (MIC)
+type EAPOLKeyDescriptorVersion uint8
+
+// Enumeration of EAPOLKeyDescriptorVersion
+const (
+	EAPOLKeyDescriptorVersionOther       EAPOLKeyDescriptorVersion = 0
+	EAPOLKeyDescriptorVersionRC4HMACMD5  EAPOLKeyDescriptorVersion = 1
+	EAPOLKeyDescriptorVersionAESHMACSHA1 EAPOLKeyDescriptorVersion = 2
+	EAPOLKeyDescriptorVersionAES128CMAC  EAPOLKeyDescriptorVersion = 3
+)
+
+func (v EAPOLKeyDescriptorVersion) String() string {
+	switch v {
+	case EAPOLKeyDescriptorVersionOther:
+		return "Other"
+	case EAPOLKeyDescriptorVersionRC4HMACMD5:
+		return "RC4-HMAC-MD5"
+	case EAPOLKeyDescriptorVersionAESHMACSHA1:
+		return "AES-HMAC-SHA1-128"
+	case EAPOLKeyDescriptorVersionAES128CMAC:
+		return "AES-128-CMAC"
+	default:
+		return fmt.Sprintf("unknown version %d", v)
+	}
+}
+
+// EAPOLKeyType is an enumeration of key derivation types describing
+// the purpose of the keys being derived.
+type EAPOLKeyType uint8
+
+// Enumeration of EAPOLKeyType
+const (
+	EAPOLKeyTypeGroupSMK EAPOLKeyType = 0
+	EAPOLKeyTypePairwise EAPOLKeyType = 1
+)
+
+func (kt EAPOLKeyType) String() string {
+	switch kt {
+	case EAPOLKeyTypeGroupSMK:
+		return "Group/SMK"
+	case EAPOLKeyTypePairwise:
+		return "Pairwise"
+	default:
+		return fmt.Sprintf("unknown key type %d", kt)
+	}
+}
+
+// EAPOLKey defines an EAPOL-Key frame for 802.1x authentication
 type EAPOLKey struct {
 	BaseLayer
-
-	DescriptorType uint8
-	KeyInfo        uint16
-
-	KeyInfo_DescriptorVersion int
-	KeyInfo_Type              int
-	KeyInfo_Index             int
-	KeyInfo_Install           int
-	KeyInfo_ACK               int
-	KeyInfo_MIC               int
-	KeyInfo_Secure            int
-	KeyInfo_Error             int
-	KeyInfo_Request           int
-	KeyInfo_EncryptedKeyData  int
-	KeyInfo_SMKMessage        int
-
-	KeyLength uint16
-
-	KeyReplayCounter []byte // 8 bytes
-	KeyNonce         []byte // 32 bytes
-	KeyIV            []byte // 16 bytes
-	KeyRSC           []byte // 8 bytes
-	//KeyMIC           []byte // variable length
-	//KeyDataLength    uint16
-	//KeyData          []byte
+	KeyDescriptorType    EAPOLKeyDescriptorType
+	KeyDescriptorVersion EAPOLKeyDescriptorVersion
+	KeyType              EAPOLKeyType
+	KeyIndex             uint8
+	Install              bool
+	KeyACK               bool
+	KeyMIC               bool
+	Secure               bool
+	MICError             bool
+	Request              bool
+	HasEncryptedKeyData  bool
+	SMKMessage           bool
+	KeyLength            uint16
+	ReplayCounter        uint64
+	Nonce                []byte
+	IV                   []byte
+	RSC                  uint64
+	ID                   uint64
+	MIC                  []byte
+	KeyDataLength        uint16
+	EncryptedKeyData     []byte
 }
 
-func (e *EAPOLKey) LayerType() gopacket.LayerType {
+// LayerType returns LayerTypeEAPOLKey.
+func (ek *EAPOLKey) LayerType() gopacket.LayerType {
 	return LayerTypeEAPOLKey
 }
 
-func (e *EAPOLKey) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
-
-	e.DescriptorType = uint8(data[0])
-	e.KeyInfo = binary.BigEndian.Uint16(data[1:3])
-
-	e.KeyInfo_DescriptorVersion = int(e.KeyInfo & 7)
-	e.KeyInfo_Type = int((e.KeyInfo >> 3) & 1)
-	e.KeyInfo_Index = int((e.KeyInfo >> 4) & 3)
-	e.KeyInfo_Install = int((e.KeyInfo >> 6) & 1)
-	e.KeyInfo_ACK = int((e.KeyInfo >> 7) & 1)
-	e.KeyInfo_MIC = int((e.KeyInfo >> 8) & 1)
-	e.KeyInfo_Secure = int((e.KeyInfo >> 9) & 1)
-	e.KeyInfo_Error = int((e.KeyInfo >> 10) & 1)
-	e.KeyInfo_Request = int((e.KeyInfo >> 11) & 1)
-	e.KeyInfo_EncryptedKeyData = int((e.KeyInfo >> 12) & 1)
-	e.KeyInfo_SMKMessage = int((e.KeyInfo >> 13) & 1)
-
-	e.KeyLength = binary.BigEndian.Uint16(data[3:5])
-
-	e.KeyReplayCounter = data[5 : 5+8]
-	e.KeyNonce = data[13 : 13+32]
-	e.KeyIV = data[45 : 45+16]
-	e.KeyRSC = data[61 : 61+8]
-
-	e.BaseLayer = BaseLayer{Contents: data}
-	e.Payload = nil
-	return nil
-}
-
-func (e *EAPOLKey) CanDecode() gopacket.LayerClass {
-	return LayerTypeEAPOLKey
-}
-
-func (e *EAPOLKey) NextLayerType() gopacket.LayerType {
+// NextLayerType returns layers.LayerTypeDot11InformationElement if the key
+// data exists and is unencrypted, otherwise it does not expect a next layer.
+func (ek *EAPOLKey) NextLayerType() gopacket.LayerType {
+	if !ek.HasEncryptedKeyData && ek.KeyDataLength > 0 {
+		return LayerTypeDot11InformationElement
+	}
 	return gopacket.LayerTypePayload
 }
 
+const eapolKeyFrameLen = 95
+
+// DecodeFromBytes decodes the given bytes into this layer.
+func (ek *EAPOLKey) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+	if len(data) < eapolKeyFrameLen {
+		df.SetTruncated()
+		return fmt.Errorf("EAPOLKey length %v too short, %v required",
+			len(data), eapolKeyFrameLen)
+	}
+
+	ek.KeyDescriptorType = EAPOLKeyDescriptorType(data[0])
+
+	info := binary.BigEndian.Uint16(data[1:3])
+	ek.KeyDescriptorVersion = EAPOLKeyDescriptorVersion(info & 0x0007)
+	ek.KeyType = EAPOLKeyType((info & 0x0008) >> 3)
+	ek.KeyIndex = uint8((info & 0x0030) >> 4)
+	ek.Install = (info & 0x0040) != 0
+	ek.KeyACK = (info & 0x0080) != 0
+	ek.KeyMIC = (info & 0x0100) != 0
+	ek.Secure = (info & 0x0200) != 0
+	ek.MICError = (info & 0x0400) != 0
+	ek.Request = (info & 0x0800) != 0
+	ek.HasEncryptedKeyData = (info & 0x1000) != 0
+	ek.SMKMessage = (info & 0x2000) != 0
+
+	ek.KeyLength = binary.BigEndian.Uint16(data[3:5])
+	ek.ReplayCounter = binary.BigEndian.Uint64(data[5:13])
+
+	ek.Nonce = data[13:45]
+	ek.IV = data[45:61]
+	ek.RSC = binary.BigEndian.Uint64(data[61:69])
+	ek.ID = binary.BigEndian.Uint64(data[69:77])
+	ek.MIC = data[77:93]
+
+	ek.KeyDataLength = binary.BigEndian.Uint16(data[93:95])
+
+	totalLength := eapolKeyFrameLen + int(ek.KeyDataLength)
+	if len(data) < totalLength {
+		df.SetTruncated()
+		return fmt.Errorf("EAPOLKey data length %d too short, %d required",
+			len(data)-eapolKeyFrameLen, ek.KeyDataLength)
+	}
+
+	if ek.HasEncryptedKeyData {
+		ek.EncryptedKeyData = data[eapolKeyFrameLen:totalLength]
+		ek.BaseLayer = BaseLayer{
+			Contents: data[:totalLength],
+			Payload:  data[totalLength:],
+		}
+	} else {
+		ek.BaseLayer = BaseLayer{
+			Contents: data[:eapolKeyFrameLen],
+			Payload:  data[eapolKeyFrameLen:],
+		}
+	}
+
+	return nil
+}
+
+// SerializeTo writes the serialized form of this layer into the
+// SerializationBuffer, implementing gopacket.SerializableLayer.
+// See the docs for gopacket.SerializableLayer for more info.
+func (ek *EAPOLKey) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+	buf, err := b.PrependBytes(eapolKeyFrameLen + len(ek.EncryptedKeyData))
+	if err != nil {
+		return err
+	}
+
+	buf[0] = byte(ek.KeyDescriptorType)
+
+	var info uint16
+	info |= uint16(ek.KeyDescriptorVersion)
+	info |= uint16(ek.KeyType) << 3
+	info |= uint16(ek.KeyIndex) << 4
+	if ek.Install {
+		info |= 0x0040
+	}
+	if ek.KeyACK {
+		info |= 0x0080
+	}
+	if ek.KeyMIC {
+		info |= 0x0100
+	}
+	if ek.Secure {
+		info |= 0x0200
+	}
+	if ek.MICError {
+		info |= 0x0400
+	}
+	if ek.Request {
+		info |= 0x0800
+	}
+	if ek.HasEncryptedKeyData {
+		info |= 0x1000
+	}
+	if ek.SMKMessage {
+		info |= 0x2000
+	}
+	binary.BigEndian.PutUint16(buf[1:3], info)
+
+	binary.BigEndian.PutUint16(buf[3:5], ek.KeyLength)
+	binary.BigEndian.PutUint64(buf[5:13], ek.ReplayCounter)
+
+	copy(buf[13:45], ek.Nonce)
+	copy(buf[45:61], ek.IV)
+	binary.BigEndian.PutUint64(buf[61:69], ek.RSC)
+	binary.BigEndian.PutUint64(buf[69:77], ek.ID)
+	copy(buf[77:93], ek.MIC)
+
+	binary.BigEndian.PutUint16(buf[93:95], ek.KeyDataLength)
+	if len(ek.EncryptedKeyData) > 0 {
+		copy(buf[95:95+len(ek.EncryptedKeyData)], ek.EncryptedKeyData)
+	}
+
+	return nil
+}
+
 func decodeEAPOLKey(data []byte, p gopacket.PacketBuilder) error {
-	e := &EAPOLKey{}
-	return decodingLayerDecoder(e, data, p)
+	ek := &EAPOLKey{}
+	return decodingLayerDecoder(ek, data, p)
 }

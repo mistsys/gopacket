@@ -11,10 +11,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -34,7 +34,7 @@ func generatePackets() {
 
 func main() {
 	flag.Parse()
-	ifaces, err := net.Interfaces()
+	ifaces, err := pcap.FindAllDevs()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,9 +50,9 @@ func main() {
 	os.Exit(1)
 }
 
-func tryCapture(iface net.Interface) error {
+func tryCapture(iface pcap.Interface) error {
 	if iface.Name[:2] == "lo" {
-		return fmt.Errorf("skipping loopback")
+		return errors.New("skipping loopback")
 	}
 	var h *pcap.Handle
 	var err error
@@ -87,7 +87,7 @@ func tryCapture(iface net.Interface) error {
 		}
 		sources := u.SupportedTimestamps()
 		if len(sources) == 0 {
-			return fmt.Errorf("no supported timestamp sources")
+			return errors.New("no supported timestamp sources")
 		} else if err := u.SetTimestampSource(sources[0]); err != nil {
 			return fmt.Errorf("settimestampsource(%v): %v", sources[0], err)
 		} else if h, err = u.Activate(); err != nil {

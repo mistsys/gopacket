@@ -56,7 +56,7 @@ func createUDPChecksumTestLayer() (udp *UDP) {
 }
 
 func TestIPv4UDPChecksum(t *testing.T) {
-	var serialize []gopacket.SerializableLayer = make([]gopacket.SerializableLayer, 0, 2)
+	var serialize = make([]gopacket.SerializableLayer, 0, 2)
 	var u *UDP
 	var err error
 
@@ -94,7 +94,7 @@ func TestIPv4UDPChecksum(t *testing.T) {
 }
 
 func TestIPv6UDPChecksumWithIPv6DstOpts(t *testing.T) {
-	var serialize []gopacket.SerializableLayer = make([]gopacket.SerializableLayer, 0, 3)
+	var serialize = make([]gopacket.SerializableLayer, 0, 3)
 	var u *UDP
 	var err error
 
@@ -136,7 +136,7 @@ func TestIPv6UDPChecksumWithIPv6DstOpts(t *testing.T) {
 }
 
 func TestIPv6JumbogramUDPChecksum(t *testing.T) {
-	var serialize []gopacket.SerializableLayer = make([]gopacket.SerializableLayer, 0, 4)
+	var serialize = make([]gopacket.SerializableLayer, 0, 4)
 	var u *UDP
 	var err error
 
